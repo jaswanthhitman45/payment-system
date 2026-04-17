@@ -1,27 +1,27 @@
 package com.payment;
 
+import com.sun.net.httpserver.HttpServer;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+
 public class PaymentApp {
-
-    public static void main(String[] args) {
-        System.out.println("--- Payment Processing System Starting ---");
+    public static void main(String[] args) throws Exception {
+        // Start a server on port 8080 (matching your containerPort)
+        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        server.createContext("/", (exchange -> {
+            String response = "<h1>Payment Processing System is Online</h1><p>Status: Secure</p>";
+            exchange.sendResponseHeaders(200, response.length());
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(response.getBytes());
+            }
+        }));
+        
+        System.out.println("--- Payment Server started on port 8080 ---");
+        server.setExecutor(null);
+        server.start();
     }
 
-    /**
-     * Task 1: Develop payment validation logic
-     * Validates that payment is above zero and does not exceed a safety limit.
-     */
     public boolean validatePayment(double amount) {
-        // Logic: Payment must be positive and less than 10,000 for security
-        if (amount <= 0 || amount > 10000) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Checks if the currency code is supported.
-     */
-    public boolean isCurrencySupported(String currency) {
-        return "USD".equalsIgnoreCase(currency) || "EUR".equalsIgnoreCase(currency);
+        return amount > 0 && amount <= 10000;
     }
 }
